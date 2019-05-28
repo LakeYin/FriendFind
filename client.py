@@ -18,7 +18,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith('!~find') and !running:
+    if message.content.startswith('!~find') and not running:
 		running = True
         await message.author.send('Finding you friends...')
 		find_friends(message.author, message.guild)
@@ -35,7 +35,7 @@ def find_friends(user, guild):
 
 	for channel in guild.text_channels:
 		async for message in channel.history(limit=200):
-			if message.author != client.user and message.author == user:
-				user_messages.add(message)
+			if message.author != client.user and message.author == user and not message.attachments:
+				user_messages.add(message.clean_content)
 				
 client.run(TOKEN_AUTH)
