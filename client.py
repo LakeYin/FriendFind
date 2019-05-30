@@ -1,4 +1,5 @@
 import discord
+import status
 
 token_file = open("token.txt", "r") #auth token
 
@@ -6,8 +7,6 @@ TOKEN_AUTH = token_file.readline()
 token_file.close()
 
 client = discord.Client()
-
-running = False
 
 @client.event
 async def on_ready():
@@ -18,24 +17,30 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith('!~find') and not running:
-		running = True
+    if message.content.startswith('!~find') and not status.running:
+        status.running = True
         await message.author.send('Finding you friends...')
-		find_friends(message.author, message.guild)
-		running = False
+        await find_friends(message.author, message.guild)
+        status.running = False
 		
-	if message.content.startswith('!~find') and running:
+    if message.content.startswith('!~find') and status.running:
         await message.channel.send('Currently busy!')
 		
-	if message.content.startswith('!~help'):
+    if message.content.startswith('!~help'):
         await message.channel.send('Type ```!~find``` into this channel to let me find friends for you! Only one person can run this at a time.')
 		
-def find_friends(user, guild):
+async def find_friends(user, guild):
 	user_messages = []
 
 	for channel in guild.text_channels:
-		async for message in channel.history(limit=200):
-			if message.author != client.user and message.author == user and not message.attachments:
-				user_messages.add(message.clean_content)
+		try:
+			async for message in channel.history().filter(lambda m: not m.author.bot and not m.attachments): #filters out messages from bots and messages with attachments
+				if message.author == user:
+					user_messages.append(message.clean_content)
+		
+		except:
+			print("Could not view " + channel.name)
+				
+	print(user_messages)
 				
 client.run(TOKEN_AUTH)
