@@ -35,7 +35,6 @@ async def find_friends(user, guild):
 	word_map = {}
 	
 	user_messages = []
-	user_ints = []
 	
 	for channel in guild.text_channels:
 		try:
@@ -57,16 +56,22 @@ async def find_friends(user, guild):
 		word_map[word] = word_index
 		
 		return word_index
-		
-	for message in user_messages: # converts words into lists of integers
+			
+	user_ints = messages_to_ints(user_messages)
+	#print(user_ints)
+	
+def messages_to_ints(user_messages): # converts words into lists of integers
+	ints = []
+
+	for message in user_messages: 
 		new_message = message.split()
-		message_to_ints = []
+		converted_message = []
 		
 		for word in new_message:
-			message_to_ints.append(get_number(word))
+			converted_message.append(get_number(word))
 			
-		user_ints.append(numpy.array(message_to_ints, dtype = int))
-			
-	#print(user_ints)
+		ints.append(numpy.array(converted_message, dtype = int))
+		
+	return ints
 				
 client.run(TOKEN_AUTH)
