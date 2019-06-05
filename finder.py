@@ -1,5 +1,6 @@
 import discord
 import helper
+import numpy
 
 async def find_friends(user, guild):
 	user_messages = []
