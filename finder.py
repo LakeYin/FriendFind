@@ -28,6 +28,7 @@ async def find_friends(user, guild):
 	#print(other_messages)
 	
 	user_ints = helper.messages_to_ints(user_messages)
+	labels = numpy.array([1] * len(user_ints), dtype=uint8)
 	#print(user_ints)
 	
 def clear_words():

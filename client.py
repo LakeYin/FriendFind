@@ -27,6 +27,6 @@ async def on_message(message):
         await message.channel.send('Currently busy!')
 		
     if message.content.startswith('!~help'):
-        await message.channel.send('Type ```!~find``` into this channel to let me find friends for you! Only one person can run this at a time.')
+        await message.channel.send('Type `!~find` into this channel to let me find friends for you! Only one person can run this at a time.')
 
 client.run(TOKEN_AUTH)

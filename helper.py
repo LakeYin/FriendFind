@@ -2,15 +2,13 @@ import numpy
 
 running = False
 
-word_list = []
-word_map = {}
+word_map = {"<PAD>": 0} # map padding to 0 by default
 
 def get_number(word): # maps words to an integer, returns integer if it already exists in the dictionary
 	if word in word_map:
 		return word_map[word];
 
-	word_index = len(word_list)
-	word_list.append(word)
+	word_index = len(word_map)
 	word_map[word] = word_index
 		
 	return word_index
