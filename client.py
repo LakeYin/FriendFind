@@ -51,33 +51,15 @@ async def find_friends(user, guild):
 			print("Could not view " + channel.name)
 				
 	#print(user_messages)
-	#print(other_messages)
-		
-	user_ints = messages_to_ints(user_messages)
+	
+	other_messages = dict((id, messages) for (id, messages) in other_messages.items() if len(messages) >= 10)
+	print(other_messages)
+	
+	user_ints = helper.messages_to_ints(user_messages)
 	#print(user_ints)
 	
-def get_number(word): # maps words to an integer, returns integer if it already exists in the dictionary
-	if word in helper.word_map:
-		return helper.word_map[word];
-
-	word_index = len(helper.word_list)
-	helper.word_list.append(word)
-	helper.word_map[word] = word_index
-		
-	return word_index
-	
-def messages_to_ints(user_messages): # converts words into lists of integers
-	ints = []
-
-	for message in user_messages: 
-		new_message = message.split()
-		converted_message = []
-	
-		for word in new_message:
-			converted_message.append(get_number(word))
-			
-		ints.append(numpy.array(converted_message, dtype = int))
-		
-	return ints
+def clear_words():
+	helper.word_list.clear()
+	helper.word_map.clear()
 
 client.run(TOKEN_AUTH)
