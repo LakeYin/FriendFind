@@ -27,10 +27,13 @@ async def find_friends(user, guild):
 	#print(user_messages)
 	
 	other_messages = dict((id, messages) for (id, messages) in other_messages.items() if len(messages) >= 10)
-	#print(other_messages)
 	
 	user_ints = helper.messages_to_ints(user_messages)
 	user_ints = keras.preprocessing.sequence.pad_sequences(user_ints, value=helper.word_map["<PAD>"], padding='post', maxlen=2000) # max character count for a discord message is 2000
+	
+	other_ints = {}
+	for id, messages in other_messages.items():
+		other_ints[id] = helper.messages_to_ints(messages)
 	
 	labels = numpy.array([1] * len(user_ints), dtype=int)
 	#print(user_ints)
@@ -38,9 +41,10 @@ async def find_friends(user, guild):
 	model = create_model(len(helper.word_map))
 	model.fit(user_ints, labels, epochs=40)
 	
-	other_ints = {}	
-	for id, messages in other_messages:
-		other_ints[id] = messages_to_ints(messages)
+	for id, ints in other_ints.items():
+		for int_message in ints:
+			prediction = model.predict(int_message)
+			print(str(id) + ":\n" + str(prediction))
 	
 def create_model(vocab):
 	model = keras.Sequential()
@@ -49,7 +53,7 @@ def create_model(vocab):
 	model.add(keras.layers.Dense(16, activation=tensorflow.nn.relu))
 	model.add(keras.layers.Dense(1, activation=tensorflow.nn.sigmoid))
 	
-	model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
+	model.compile(optimizer='adadelta', loss='binary_crossentropy', metrics=['acc'])
 	
 	return model
 	
