@@ -13,10 +13,10 @@ def get_number(word): # maps words to an integer, returns integer if it already 
 		
 	return word_index
 	
-def messages_to_ints(user_messages): # converts words into lists of integers
+def messages_to_ints(messages): # converts words into lists of integers
 	ints = []
 
-	for message in user_messages: 
+	for message in messages: 
 		new_message = message.split()
 		converted_message = []
 	

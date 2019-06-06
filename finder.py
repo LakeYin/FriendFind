@@ -1,6 +1,8 @@
 import discord
 import helper
 import numpy
+import tensorflow
+from tensorflow import keras
 
 async def find_friends(user, guild):
 	user_messages = []
@@ -28,8 +30,28 @@ async def find_friends(user, guild):
 	#print(other_messages)
 	
 	user_ints = helper.messages_to_ints(user_messages)
-	labels = numpy.array([1] * len(user_ints), dtype=uint8)
+	user_ints = keras.preprocessing.sequence.pad_sequences(user_ints, value=helper.word_map["<PAD>"], padding='post', maxlen=2000) # max character count for a discord message is 2000
+	
+	labels = numpy.array([1] * len(user_ints), dtype=int)
 	#print(user_ints)
+	
+	model = create_model(len(helper.word_map))
+	model.fit(user_ints, labels, epochs=40)
+	
+	other_ints = {}	
+	for id, messages in other_messages:
+		other_ints[id] = messages_to_ints(messages)
+	
+def create_model(vocab):
+	model = keras.Sequential()
+	model.add(keras.layers.Embedding(vocab, 16))
+	model.add(keras.layers.GlobalAveragePooling1D())
+	model.add(keras.layers.Dense(16, activation=tensorflow.nn.relu))
+	model.add(keras.layers.Dense(1, activation=tensorflow.nn.sigmoid))
+	
+	model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
+	
+	return model
 	
 def clear_words():
 	helper.word_list.clear()
