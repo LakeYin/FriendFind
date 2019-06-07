@@ -6,7 +6,12 @@ from tensorflow import keras
 
 async def find_friends(user, guild):
 	user_messages = []
+	user_ints = []
+	
 	other_messages = {}
+	other_ints = {}
+	
+	friend_values = {}
 	
 	for member in guild.members:
 		if not member.bot and not member == user:
@@ -14,7 +19,7 @@ async def find_friends(user, guild):
 	
 	for channel in guild.text_channels:
 		try:
-			async for message in channel.history().filter(lambda m: not m.author.bot and not m.attachments): #filters out messages from bots and messages with attachments
+			async for message in channel.history(limit=1000000).filter(lambda m: not m.author.bot and not m.attachments): #filters out messages from bots and messages with attachments
 				if message.author == user:
 					user_messages.append(message.clean_content)
 					
@@ -31,7 +36,6 @@ async def find_friends(user, guild):
 	user_ints = helper.messages_to_ints(user_messages)
 	user_ints = keras.preprocessing.sequence.pad_sequences(user_ints, value=helper.word_map["<PAD>"], padding='post', maxlen=2000) # max character count for a discord message is 2000
 	
-	other_ints = {}
 	for id, messages in other_messages.items():
 		other_ints[id] = helper.messages_to_ints(messages)
 	
@@ -39,13 +43,21 @@ async def find_friends(user, guild):
 	#print(user_ints)
 	
 	model = create_model(len(helper.word_map))
-	model.fit(user_ints, labels, epochs=40)
+	model.fit(user_ints, labels, epochs=40, verbose=0)
 	
 	for id, ints in other_ints.items():
-		for int_message in ints:
-			prediction = model.predict(int_message)
-			print(str(id) + ":\n" + str(prediction))
-	
+		total_value = 0
+		count = 0
+		for int_message in ints: 
+			prediction = helper.reduce_nest(model.predict(int_message))
+			if prediction > 0:
+				count += 1
+				total_value += prediction
+			
+		friend_values[id] = total_value / count
+		
+	return friend_values
+		
 def create_model(vocab):
 	model = keras.Sequential()
 	model.add(keras.layers.Embedding(vocab, 16))
@@ -55,7 +67,7 @@ def create_model(vocab):
 	
 	model.compile(optimizer='adadelta', loss='binary_crossentropy', metrics=['acc'])
 	
-	return model
+	return model	
 	
 def clear_words():
 	helper.word_list.clear()
