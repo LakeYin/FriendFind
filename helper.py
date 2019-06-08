@@ -4,7 +4,8 @@ running = False
 
 word_map = {"<PAD>": 0} # map padding to 0 by default
 
-def get_number(word): # maps words to an integer, returns integer if it already exists in the dictionary
+def get_number(word):
+	"""Returns an integer mapping a word to an index and adds it in the dictionary if it did not already exist"""
 	if word in word_map:
 		return word_map[word];
 
@@ -13,7 +14,8 @@ def get_number(word): # maps words to an integer, returns integer if it already 
 		
 	return word_index
 	
-def messages_to_ints(messages): # converts words into lists of integers
+def messages_to_ints(messages):
+	"""Converts words into lists of integers"""
 	ints = []
 
 	for message in messages: 
@@ -28,6 +30,7 @@ def messages_to_ints(messages): # converts words into lists of integers
 	return ints
 	
 def reduce_nest(nested_arrays):
+	"""Returns a 1D list of data based on nested arrays"""
 	count = 0
 	sum = 0
 	for val_array in nested_arrays: # reduces nested arrays of different size into one float

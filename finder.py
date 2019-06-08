@@ -7,6 +7,7 @@ import tensorflow
 from tensorflow import keras
 
 async def find_friends(user, guild):
+	"""Returns a dictionary of floats representing similarity percentage mapped to Discord user mentions based on the user and guild"""
 	user_messages = []
 	user_ints = []
 	
@@ -48,7 +49,7 @@ async def find_friends(user, guild):
 	
 	model = create_model(len(helper.word_map))
 	print("Fitting model")
-	model.fit(user_ints, labels, epochs=30, verbose=0)
+	model.fit(user_ints, labels, epochs=30, verbose=1)
 	
 	print("Making predictions")
 	for mention, ints in other_ints.items():
@@ -65,6 +66,7 @@ async def find_friends(user, guild):
 	return friend_values
 		
 def create_model(vocab):
+	"""Returns a Keras model based on the size of the vocabulary and other settings"""
 	model = keras.Sequential()
 	model.add(keras.layers.Embedding(vocab, 16))
 	model.add(keras.layers.GlobalAveragePooling1D())
@@ -76,5 +78,5 @@ def create_model(vocab):
 	return model	
 	
 def clear_words():
-	helper.word_list.clear()
+	"""Clears the dictionary of word indexes"""
 	helper.word_map.clear()
