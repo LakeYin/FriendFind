@@ -17,7 +17,8 @@ client = discord.Client()
 
 @client.event
 async def on_ready():
-    print('We have logged in as {0.user}'.format(client))
+	print('We have logged in as {0.user}'.format(client))
+	await client.change_presence(status=discord.Status.online, activity=discord.Game(helper.idle_status))
 
 @client.event
 async def on_message(message):
@@ -28,14 +29,13 @@ async def on_message(message):
 		REPORT_COUNT = 5
 	
 		helper.running = True
-		friend_values = {}
+		await client.change_presence(status=discord.Status.dnd, activity=discord.Game(helper.active_status))
 		
 		await message.author.send("Finding you friends... (this will take a while, don't be afraid if I go offline!)")
 		await message.channel.send("Running friend analysis... (this will take a while, don't be afraid if I go offline!)")
 		
 		friend_values = await finder.find_friends(message.author, message.guild)
-		
-		ordered_list = sorted(friend_values.items(), key=lambda x: x[1], reverse=True) # creates a lost of tuples
+		ordered_list = sorted(friend_values.items(), key=lambda x: x[1], reverse=True) # creates a list of tuples
 		
 		report = "Your top 5 most similar people:\n\n"
 		
@@ -44,7 +44,8 @@ async def on_message(message):
 			report += ordered_list[i][0] + " : " + '{:.1%}'.format(ordered_list[i][1]) + "\n"
 			i += 1
 		
-		await message.author.send(report)
+		await message.author.send(report)	
+		await client.change_presence(status=discord.Status.online, activity=discord.Game(helper.idle_status))
 		await message.channel.send("Analysis complete!")
 		
 		helper.running = False

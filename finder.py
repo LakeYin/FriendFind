@@ -47,9 +47,11 @@ async def find_friends(user, guild):
 	labels = numpy.array([1] * len(user_ints), dtype=int)
 	#print(user_ints)
 	
+	epochs = max(10, 30 - int(len(labels) / 100))
+	
 	model = create_model(len(helper.word_map))
 	print("Fitting model")
-	model.fit(user_ints, labels, epochs=30, verbose=1)
+	model.fit(user_ints, labels, epochs=epochs, verbose=1)
 	
 	print("Making predictions")
 	for mention, ints in other_ints.items():
@@ -73,7 +75,7 @@ def create_model(vocab):
 	model.add(keras.layers.Dense(16, activation=tensorflow.nn.relu))
 	model.add(keras.layers.Dense(1, activation=tensorflow.nn.sigmoid))
 	
-	model.compile(optimizer='adagrad', loss='binary_crossentropy', metrics=['acc'])
+	model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
 	
 	return model	
 	

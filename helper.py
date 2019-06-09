@@ -2,6 +2,9 @@ import numpy
 
 running = False
 
+idle_status = "with nothing (!~help)"
+active_status = "with someone's data (please wait!)"
+
 word_map = {"<PAD>": 0} # map padding to 0 by default
 
 def get_number(word):
