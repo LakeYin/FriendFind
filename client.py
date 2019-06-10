@@ -3,7 +3,7 @@ import helper, finder
 import logging
 
 logger = logging.getLogger('discord')
-logger.setLevel(logging.ERROR)
+logger.setLevel(logging.INFO)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
@@ -18,7 +18,7 @@ client = discord.Client()
 @client.event
 async def on_ready():
 	print('We have logged in as {0.user}'.format(client))
-	await client.change_presence(status=discord.Status.online, activity=discord.Game(helper.idle_status))
+	await client.change_presence(status=discord.Status.online, activity=discord.Game(helper.game_status))
 
 @client.event
 async def on_message(message):
@@ -29,7 +29,7 @@ async def on_message(message):
 		REPORT_COUNT = 5
 	
 		helper.running = True
-		await client.change_presence(status=discord.Status.dnd, activity=discord.Game(helper.active_status))
+		#await client.change_presence(status=discord.Status.dnd, activity=discord.Game(helper.active_status))
 		
 		await message.author.send("Finding you friends... (this will take a while, don't be afraid if I go offline!)")
 		await message.channel.send("Running friend analysis... (this will take a while, don't be afraid if I go offline!)")
@@ -44,8 +44,10 @@ async def on_message(message):
 			report += ordered_list[i][0] + " : " + '{:.1%}'.format(ordered_list[i][1]) + "\n"
 			i += 1
 		
+		#await client.connect(reconnect=True)
+		
 		await message.author.send(report)	
-		await client.change_presence(status=discord.Status.online, activity=discord.Game(helper.idle_status))
+		#await client.change_presence(status=discord.Status.online, activity=discord.Game(helper.idle_status)) # this line causes an error for some reason (websockets.exceptions.ConnectionClosed: WebSocket connection is closed: code = 1000 (OK), no reason)
 		await message.channel.send("Analysis complete!")
 		
 		helper.running = False
