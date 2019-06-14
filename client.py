@@ -18,7 +18,7 @@ client = discord.Client()
 @client.event
 async def on_ready():
 	print('We have logged in as {0.user}'.format(client))
-	await client.change_presence(status=discord.Status.online, activity=discord.Game(helper.game_status))
+	await client.change_presence(status=discord.Status.online, activity=helper.game_status)
 
 @client.event
 async def on_message(message):
@@ -37,16 +37,9 @@ async def on_message(message):
 		friend_values = await finder.find_friends(message.author, message.guild)
 		ordered_list = sorted(friend_values.items(), key=lambda x: x[1], reverse=True) # creates a list of tuples
 		
-		report = "Your top 5 most similar people:\n\n"
-		
-		i = 0
-		while i < REPORT_COUNT and i < len(ordered_list):
-			report += ordered_list[i][0] + " : " + '{:.1%}'.format(ordered_list[i][1]) + "\n"
-			i += 1
-		
 		#await client.connect(reconnect=True)
 		
-		await message.author.send(report)	
+		await message.author.send(embed = helper.create_embed(client.user, message.author, REPORT_COUNT, ordered_list))	
 		#await client.change_presence(status=discord.Status.online, activity=discord.Game(helper.idle_status)) # this line causes an error for some reason (websockets.exceptions.ConnectionClosed: WebSocket connection is closed: code = 1000 (OK), no reason)
 		await message.channel.send("Analysis complete!")
 		
