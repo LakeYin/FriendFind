@@ -9,6 +9,31 @@ game_status = discord.Game("with data (!~help)")
 
 word_map = {"<PAD>": 0} # map padding to 0 by default
 
+async def gather_messages(user, guild):
+	"""Returns a list of a user's messages and a dictionary mapping everyone else in a server's id to a list of their messages"""
+	user_messages = []
+	other_messages = {}
+	
+	for member in guild.members:
+		if not member.bot and not member == user:
+			other_messages[member.id] = []
+	
+	for channel in guild.text_channels:
+		try:
+			async for message in channel.history(limit = 5000).filter(lambda m: not m.author.bot and not m.attachments): #filters out messages from bots and messages with attachments
+				if message.author == user:
+					user_messages.append(message.clean_content)
+					
+				elif message.author.id in other_messages:
+					other_messages[message.author.id].append(message.clean_content)
+			
+			print("Recorded " + channel.name)
+			
+		except:
+			print("Could not view " + channel.name)
+			
+	return user_messages, other_messages
+
 def get_number(word):
 	"""Returns an integer mapping a word to an index and adds it in the dictionary if it did not already exist"""
 	if word in word_map:
@@ -55,7 +80,7 @@ def create_embed(bot, user, report_count, ordered_list):
 	
 	i = 0
 	while i < report_count and i < len(ordered_list):
-		embed.add_field(name = create_progress_bar(20, ordered_list[i][1]) + " **{:.1%}**".format(ordered_list[i][1]), value = ordered_list[i][0], inline = False)
+		embed.add_field(name = create_progress_bar(20, ordered_list[i][1]) + " **{:.1%}**".format(ordered_list[i][1]), value = "<@{}>".format(ordered_list[i][0]), inline = False)
 		i += 1
 	
 	return embed

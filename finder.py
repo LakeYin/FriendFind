@@ -8,41 +8,18 @@ from tensorflow import keras
 
 async def find_friends(user, guild):
 	"""Returns a dictionary of floats representing similarity percentage mapped to Discord user mentions based on the user and guild"""
-	user_messages = []
-	user_ints = []
+	user_messages, other_messages = await helper.gather_messages(user, guild)
 	
-	other_messages = {}
+	other_messages = dict((id, messages) for (id, messages) in other_messages.items() if len(messages) >= 10)
+	
+	user_ints = []
 	other_ints = {}
 	
-	friend_values = {}
-	
-	for member in guild.members:
-		if not member.bot and not member == user:
-			other_messages[member.mention] = []
-	
-	for channel in guild.text_channels:
-		try:
-			async for message in channel.history(limit=5000).filter(lambda m: not m.author.bot and not m.attachments): #filters out messages from bots and messages with attachments
-				if message.author == user:
-					user_messages.append(message.clean_content)
-					
-				elif message.author.mention in other_messages:
-					other_messages[message.author.mention].append(message.clean_content)
-			
-			print("Recorded " + channel.name)
-			
-		except:
-			print("Could not view " + channel.name)
-				
-	#print(user_messages)
-	
-	other_messages = dict((mention, messages) for (mention, messages) in other_messages.items() if len(messages) >= 10)
-	
 	user_ints = helper.messages_to_ints(user_messages)
-	user_ints = keras.preprocessing.sequence.pad_sequences(user_ints, value=helper.word_map["<PAD>"], padding='post', maxlen=2000) # max character count for a discord message is 2000
+	user_ints = keras.preprocessing.sequence.pad_sequences(user_ints, value = helper.word_map["<PAD>"], padding = "post", maxlen = 2000) # max character count for a discord message is 2000
 	
-	for mention, messages in other_messages.items():
-		other_ints[mention] = helper.messages_to_ints(messages)
+	for id, messages in other_messages.items():
+		other_ints[id] = helper.messages_to_ints(messages)
 	
 	labels = numpy.array([1] * len(user_ints), dtype=int)
 	#print(user_ints)
@@ -51,21 +28,11 @@ async def find_friends(user, guild):
 	
 	model = create_model(len(helper.word_map))
 	print("Fitting model")
-	model.fit(user_ints, labels, epochs=epochs, verbose=1)
+	model.fit(user_ints, labels, epochs = epochs, verbose = 1)
 	
 	print("Making predictions")
-	for mention, ints in other_ints.items():
-		total_value = 0
-		count = 0
-		for int_message in ints: 
-			prediction = helper.reduce_nest(model.predict(int_message))
-			if prediction > 0:
-				count += 1
-				total_value += prediction
-			
-		friend_values[mention] = total_value / count
 	
-	return friend_values
+	return await make_predictions(other_ints, model)
 		
 def create_model(vocab):
 	"""Returns a Keras model based on the size of the vocabulary and other settings"""
@@ -75,9 +42,28 @@ def create_model(vocab):
 	model.add(keras.layers.Dense(16, activation=tensorflow.nn.relu))
 	model.add(keras.layers.Dense(1, activation=tensorflow.nn.sigmoid))
 	
-	model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
+	model.compile(optimizer = "adam", loss = "binary_crossentropy", metrics = ["acc"])
 	
-	return model	
+	return model
+
+async def make_predictions(users_ints, model):	
+	"""Returns a dictionary of predictions based on a dictionary of user messages converted to numpy int arrays and a Keras model"""
+	predictions = {}
+	
+	for id, ints in users_ints.items():
+		sum, count = 0, 0
+		for int_message in ints: 
+			prediction = helper.reduce_nest(model.predict(int_message))
+			if prediction > 0:
+				count += 1
+				sum += prediction
+		
+		if count > 0:
+			predictions[id] = sum / count
+		else:
+			predictions[id] = 0
+		
+	return predictions
 	
 def clear_words():
 	"""Clears the dictionary of word indexes"""
