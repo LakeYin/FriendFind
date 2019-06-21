@@ -1,5 +1,6 @@
 import discord
 import numpy
+import logging
 
 running = False
 
@@ -74,7 +75,7 @@ def reduce_nest(nested_arrays):
 
 def create_embed(bot, user, report_count, ordered_list):
 	"""Creates a Discord embed to send results to users"""
-	embed=discord.Embed(title="Your top {} most similar people:".format(report_count))
+	embed = discord.Embed(title = "Your top {} most similar people:".format(report_count))
 	embed.set_author(name = user.name, icon_url = str(user.avatar_url))
 	embed.set_footer(text = bot.name, icon_url = str(bot.avatar_url))
 	
@@ -97,3 +98,14 @@ def create_progress_bar(divisions, percentage):
 	
 	bar += "]"
 	return bar
+	
+def create_logger():
+	"""Creates a logging object"""
+	logger = logging.getLogger("discord")
+	logger.setLevel(logging.ERROR)
+	handler = logging.FileHandler(filename = "discord.log", encoding = "utf-8", mode = "w")
+	handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s"))
+	logger.addHandler(handler)
+	
+	return logger
+	
