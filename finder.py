@@ -52,6 +52,7 @@ def create_model(vocab):
 	model.add(keras.layers.Embedding(vocab, 16))
 	model.add(keras.layers.GlobalAveragePooling1D())
 	model.add(keras.layers.Dense(16, activation=tensorflow.nn.relu))
+	model.add(keras.layers.Dense(16, activation=tensorflow.nn.relu))
 	model.add(keras.layers.Dense(1, activation=tensorflow.nn.sigmoid))
 	
 	model.compile(optimizer = "adam", loss = "binary_crossentropy", metrics = ["acc"])
